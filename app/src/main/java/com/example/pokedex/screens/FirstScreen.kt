@@ -15,12 +15,6 @@ import com.example.pokedex.navigation.ScreenNavigation
 
 @Composable
 fun FirstScreen(navController: NavHostController) {
-    /*
-        Scaffold permite definir el espacio para colocar una barra superior o inferior.
-        La posición es manejada automáticamente
-
-        Referencia: https://developer.android.com/jetpack/compose/layouts/material#scaffold
-    */
     Scaffold (topBar = {
         TopAppBar() {
             Text(text = "Pokedex")
