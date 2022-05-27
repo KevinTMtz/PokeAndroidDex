@@ -102,3 +102,21 @@ Para la lista se necesita:
 - **¿Se requiere de una lista de datos?** Si, obtenemos la lista de los datos que se van a mostrar a través de un request a la api.
 
 - **¿En qué hilo se crea la lista?** En el de UI porque es parte del mismo grupo de funciones.
+
+---
+
+<h2>¿Por qué la función termina el llamado en: @GET("pokemon")?</h2>
+Porque retrofit define el endpoint y la función correspondiente a través de este docorador en el que se especifica la ruta.
+
+---
+
+<h2>¿Por qué la función necesita viewModelScope?</h2>
+Es el scope de corutina asociada al view model. De tal manera que, cuando se borre el view model, se cancele automáticamente la corutina y no consuma recursos extra.
+
+**Referencia:**
+*https://developer.android.com/topic/libraries/architecture/coroutines*
+
+---
+
+<h2>¿Cómo utilizarás jetpack compose en tu proyecto?</h2>
+Lo utilizaremos para la pantalla inicial para definir los componentes de: boton de inicio, fondo, imagen y texto de bienvenida.
