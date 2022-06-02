@@ -1,13 +1,18 @@
 package com.example.pokedex.service
 
+import com.example.pokedex.data.PokemonInfo
 import com.example.pokedex.data.PokemonsData
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
 
 interface PokeMonApi {
     @GET("pokemon")
     suspend fun getPokemonsList(): PokemonsData
+
+    @GET("pokemon/{name}")
+    suspend fun getPokemonInfo(@Path("name") name:String): PokemonInfo
 
     companion object{
         var apiService: PokeMonApi ?= null
@@ -21,4 +26,5 @@ interface PokeMonApi {
             return apiService!!
         }
     }
+
 }
