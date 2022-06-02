@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
@@ -41,9 +42,10 @@ fun PokemonsScreen(navController: NavHostController) {
 
 @Composable
 fun Pokemon(pokemon: PokemonInfo) {
-    val expanded = remember { mutableStateOf(false) }
 
+    val expanded = remember { mutableStateOf(false) }
     val extraPadding = if (expanded.value) 48.dp else 0.dp
+    val pokemonName = pokemon.name.replaceFirstChar { it.uppercase() }
 
     Surface(
         color = MaterialTheme.colors.primary,
@@ -57,7 +59,7 @@ fun Pokemon(pokemon: PokemonInfo) {
                         .padding(bottom = extraPadding)
                 ) {
                     Text(text = "Pokemon: ")
-                    Text(text = pokemon.name)
+                    Text(text = pokemonName)
                 }
                 OutlinedButton(onClick = { expanded.value = !expanded.value }) {
                     Text(if (expanded.value) "hide" else "catch")
