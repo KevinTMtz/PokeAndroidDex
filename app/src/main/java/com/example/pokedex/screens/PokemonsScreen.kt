@@ -174,7 +174,7 @@ fun Pokemon(pokemon: PokemonInfo) {
                 }
 
                 OutlinedButton(onClick = { expanded.value = !expanded.value }) {
-                    Text(if (expanded.value) "hide" else "catch")
+                    Text(if (expanded.value) "Hide" else "Catch")
                 }
             }
 
