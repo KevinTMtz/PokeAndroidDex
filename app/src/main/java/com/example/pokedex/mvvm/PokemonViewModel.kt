@@ -18,7 +18,7 @@ class PokemonViewModel: ViewModel() {
             val apiService = PokeMonApi.getInstance()
 
             try{
-                val pokemons = apiService.getPokemonsList(listaPokemonsInfo.size + 20)
+                val pokemons = apiService.getPokemonsList(listaPokemonsInfo.size)
                 val pokemonsInfo: MutableList<PokemonInfo> = listaPokemonsInfo.toMutableList()
 
                 for(pokemon in pokemons.results){
