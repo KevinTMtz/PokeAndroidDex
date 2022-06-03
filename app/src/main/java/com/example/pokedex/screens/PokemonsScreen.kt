@@ -84,18 +84,18 @@ private fun SearchBar(value: String, onValueChange: (String) -> Unit) {
     TextField(
         value = value,
         onValueChange = onValueChange,
-        textStyle = TextStyle(fontSize = 17.sp, color = Color.Black),
-        trailingIcon = { Icon(Icons.Filled.Search, null, tint = Color.DarkGray) },
+        textStyle = TextStyle(fontSize = 17.sp, color = MaterialTheme.colors.onPrimary),
+        trailingIcon = { Icon(Icons.Filled.Search, null, tint = MaterialTheme.colors.onPrimary) },
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp)
             .background(MaterialTheme.colors.primary, RoundedCornerShape(16.dp)),
-        placeholder = { Text(text = "Search", color = Color.DarkGray) },
+        placeholder = { Text(text = "Search", color = MaterialTheme.colors.onPrimary.copy(alpha = 0.7f)) },
         colors = TextFieldDefaults.textFieldColors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             backgroundColor = Color.Transparent,
-            cursorColor = Color.DarkGray
+            cursorColor = MaterialTheme.colors.onSecondary
         )
     )
 }
@@ -137,7 +137,7 @@ fun Modifier.simpleVerticalScrollbar(
             val scrollbarHeight = state.layoutInfo.visibleItemsInfo.size * elementHeight
 
             drawRoundRect(
-                color = Color.White,
+                color = Color.Gray,
                 topLeft = Offset(this.size.width - width.toPx(), scrollbarOffsetY),
                 size = Size(width.toPx(), scrollbarHeight),
                 alpha = alpha,
@@ -169,7 +169,7 @@ fun Pokemon(pokemon: PokemonInfo) {
                         .weight(1f)
                         .padding(bottom = extraPadding)
                 ) {
-                    Text(text = "Pokemon: ")
+                    Text(text = "Pokemon:")
                     Text(text = pokemonName)
                 }
 
