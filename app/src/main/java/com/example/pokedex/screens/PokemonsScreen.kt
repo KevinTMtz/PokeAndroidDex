@@ -1,6 +1,8 @@
 package com.example.pokedex.screens
 
 import android.widget.Toast
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,16 +15,19 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -98,7 +103,8 @@ private fun SearchBar(value: String, onValueChange: (String) -> Unit) {
 @Composable
 private fun Pokemons(scrollState: LazyListState, pokemons: List<PokemonInfo>) {
     LazyColumn (
-        state = scrollState
+        state = scrollState,
+        modifier = Modifier.simpleVerticalScrollbar(scrollState)
     ) {
         itemsIndexed(items = pokemons) { _, item ->
             Pokemon(pokemon = item)
@@ -107,17 +113,56 @@ private fun Pokemons(scrollState: LazyListState, pokemons: List<PokemonInfo>) {
 }
 
 @Composable
-fun Pokemon(pokemon: PokemonInfo) {
+fun Modifier.simpleVerticalScrollbar(
+    state: LazyListState,
+    width: Dp = 4.dp
+): Modifier {
+    val targetAlpha = if (state.isScrollInProgress) 0.5f else 0f
+    val duration = if (state.isScrollInProgress) 150 else 500
 
+    val alpha by animateFloatAsState(
+        targetValue = targetAlpha,
+        animationSpec = tween(durationMillis = duration)
+    )
+
+    return drawWithContent {
+        drawContent()
+
+        val firstVisibleElementIndex = state.layoutInfo.visibleItemsInfo.firstOrNull()?.index
+        val needDrawScrollbar = state.isScrollInProgress || alpha > 0.0f
+
+        if (needDrawScrollbar && firstVisibleElementIndex != null) {
+            val elementHeight = this.size.height / state.layoutInfo.totalItemsCount
+            val scrollbarOffsetY = firstVisibleElementIndex * elementHeight
+            val scrollbarHeight = state.layoutInfo.visibleItemsInfo.size * elementHeight
+
+            drawRoundRect(
+                color = Color.White,
+                topLeft = Offset(this.size.width - width.toPx(), scrollbarOffsetY),
+                size = Size(width.toPx(), scrollbarHeight),
+                alpha = alpha,
+                cornerRadius = CornerRadius(
+                    x = 2.dp.toPx(),
+                    y = 2.dp.toPx()
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun Pokemon(pokemon: PokemonInfo) {
     val expanded = remember { mutableStateOf(false) }
     val extraPadding = if (expanded.value) 48.dp else 0.dp
     val pokemonName = pokemon.name.replaceFirstChar { it.uppercase() }
 
     Surface(
         color = MaterialTheme.colors.primary,
-        modifier = Modifier.padding(vertical = 5.dp, horizontal = 10.dp)
+        modifier = Modifier
+            .padding(vertical = 5.dp, horizontal = 10.dp)
+            .clip(RoundedCornerShape(16.dp))
     ) {
-        Column() {
+        Column {
             Row(modifier = Modifier.padding(25.dp)) {
                 Column(
                     Modifier
@@ -127,10 +172,12 @@ fun Pokemon(pokemon: PokemonInfo) {
                     Text(text = "Pokemon: ")
                     Text(text = pokemonName)
                 }
+
                 OutlinedButton(onClick = { expanded.value = !expanded.value }) {
                     Text(if (expanded.value) "hide" else "catch")
                 }
             }
+
             if (expanded.value)
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "# ${pokemon.id}")
