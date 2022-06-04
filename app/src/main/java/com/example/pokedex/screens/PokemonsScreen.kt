@@ -66,9 +66,11 @@ fun PokemonsScreen(navController: NavHostController) {
 
         if (pokemonViewModel.listaPokemonsInfo.isEmpty() && !isLoading) {
             onIsLoadingChange(true)
-            pokemonViewModel.getPokemons { onIsLoadingChange(false) }
-
-            Toast.makeText(context, "Loaded pokemons...", Toast.LENGTH_SHORT).show()
+            pokemonViewModel.getPokemons ({
+                Toast.makeText(context, "Loaded pokemons...", Toast.LENGTH_SHORT).show()
+            }, {
+                onIsLoadingChange(false)
+            })
         }
 
         if (scrollState.isScrollInProgress && searchStr.isEmpty()) {
@@ -76,9 +78,11 @@ fun PokemonsScreen(navController: NavHostController) {
                 onDispose {
                     if (scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == scrollState.layoutInfo.totalItemsCount - 1  && !isLoading) {
                         onIsLoadingChange(true)
-                        pokemonViewModel.getPokemons { onIsLoadingChange(false) }
-
-                        Toast.makeText(context, "Loaded more pokemons...", Toast.LENGTH_SHORT).show()
+                        pokemonViewModel.getPokemons ({
+                            Toast.makeText(context, "Loaded more pokemons...", Toast.LENGTH_SHORT).show()
+                        }, {
+                            onIsLoadingChange(false)
+                        })
                     }
                 }
             }

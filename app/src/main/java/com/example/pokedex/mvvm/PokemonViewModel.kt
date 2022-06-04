@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil.compose.AsyncImagePainter
 import com.example.pokedex.data.PokemonInfo
 import com.example.pokedex.service.PokeMonApi
 import kotlinx.coroutines.launch
@@ -13,7 +14,7 @@ class PokemonViewModel: ViewModel() {
     var listaPokemonsInfo: List<PokemonInfo> by mutableStateOf(listOf())
     var errorMessage: String by mutableStateOf("")
 
-    fun getPokemons(stopLoading: () -> Unit) {
+    fun getPokemons(onSuccess: () -> Unit, stopLoading: () -> Unit) {
         viewModelScope.launch {
             val apiService = PokeMonApi.getInstance()
 
@@ -28,10 +29,12 @@ class PokemonViewModel: ViewModel() {
 
                 listaPokemonsInfo = pokemonsInfo
 
+                onSuccess()
                 stopLoading()
             }
             catch (e: Exception){
                 errorMessage = e.message.toString()
+                stopLoading()
             }
         }
     }
