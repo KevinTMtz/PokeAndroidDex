@@ -13,7 +13,7 @@ class PokemonViewModel: ViewModel() {
     var listaPokemonsInfo: List<PokemonInfo> by mutableStateOf(listOf())
     var errorMessage: String by mutableStateOf("")
 
-    fun getPokemons() {
+    fun getPokemons(stopLoading: () -> Unit) {
         viewModelScope.launch {
             val apiService = PokeMonApi.getInstance()
 
@@ -27,6 +27,8 @@ class PokemonViewModel: ViewModel() {
                 }
 
                 listaPokemonsInfo = pokemonsInfo
+
+                stopLoading()
             }
             catch (e: Exception){
                 errorMessage = e.message.toString()

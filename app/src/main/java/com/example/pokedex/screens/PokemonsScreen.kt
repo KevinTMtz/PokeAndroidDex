@@ -54,6 +54,8 @@ fun PokemonsScreen(navController: NavHostController) {
     }) {
         val (searchStr, onSearchStrChange) = remember { mutableStateOf("") }
 
+        val (isLoading, onIsLoadingChange) = remember { mutableStateOf(false) }
+
         Column {
             SearchBar(value = searchStr, onValueChange = onSearchStrChange)
 
@@ -62,16 +64,19 @@ fun PokemonsScreen(navController: NavHostController) {
             })
         }
 
-        if (pokemonViewModel.listaPokemonsInfo.isEmpty()) {
-            pokemonViewModel.getPokemons()
+        if (pokemonViewModel.listaPokemonsInfo.isEmpty() && !isLoading) {
+            onIsLoadingChange(true)
+            pokemonViewModel.getPokemons { onIsLoadingChange(false) }
         }
 
         if (scrollState.isScrollInProgress && searchStr.isEmpty()) {
             DisposableEffect(Unit) {
                 onDispose {
-                    if (scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == scrollState.layoutInfo.totalItemsCount - 1) {
+                    if (scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == scrollState.layoutInfo.totalItemsCount - 1  && !isLoading) {
+                        onIsLoadingChange(true)
+                        pokemonViewModel.getPokemons { onIsLoadingChange(false) }
+
                         Toast.makeText(context, "Loaded more pokemons...", Toast.LENGTH_SHORT).show()
-                        pokemonViewModel.getPokemons()
                     }
                 }
             }
