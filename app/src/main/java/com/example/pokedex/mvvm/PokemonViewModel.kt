@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import coil.compose.AsyncImagePainter
 import com.example.pokedex.data.PokemonInfo
 import com.example.pokedex.service.PokeMonApi
 import kotlinx.coroutines.launch
