@@ -67,6 +67,8 @@ fun PokemonsScreen(navController: NavHostController) {
         if (pokemonViewModel.listaPokemonsInfo.isEmpty() && !isLoading) {
             onIsLoadingChange(true)
             pokemonViewModel.getPokemons { onIsLoadingChange(false) }
+
+            Toast.makeText(context, "Loaded pokemons...", Toast.LENGTH_SHORT).show()
         }
 
         if (scrollState.isScrollInProgress && searchStr.isEmpty()) {
