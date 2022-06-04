@@ -34,6 +34,7 @@ class PokemonViewModel: ViewModel() {
             }
             catch (e: Exception){
                 errorMessage = e.message.toString()
+
                 stopLoading()
             }
         }

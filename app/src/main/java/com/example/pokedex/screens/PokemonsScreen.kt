@@ -1,5 +1,6 @@
 package com.example.pokedex.screens
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
@@ -30,6 +32,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.pokedex.data.PokemonInfo
@@ -59,35 +62,56 @@ fun PokemonsScreen(navController: NavHostController) {
         Column {
             SearchBar(value = searchStr, onValueChange = onSearchStrChange)
 
-            Pokemons(scrollState = scrollState, pokemons = pokemonViewModel.listaPokemonsInfo.filter { pokemonInfo ->  
-                pokemonInfo.name.startsWith(searchStr.lowercase(Locale.getDefault()))
-            })
+            Pokemons(
+                scrollState = scrollState,
+                pokemons = pokemonViewModel.listaPokemonsInfo.filter { pokemonInfo ->
+                    pokemonInfo.name.contains(searchStr.lowercase(Locale.getDefault()))
+                })
         }
 
-        if (pokemonViewModel.listaPokemonsInfo.isEmpty() && !isLoading) {
-            onIsLoadingChange(true)
-            pokemonViewModel.getPokemons ({
-                Toast.makeText(context, "Loaded pokemons...", Toast.LENGTH_SHORT).show()
-            }, {
-                onIsLoadingChange(false)
-            })
-        }
+        if (pokemonViewModel.listaPokemonsInfo.isEmpty() && !isLoading)
+            getPokemons(
+                context,
+                pokemonViewModel,
+                onIsLoadingChange,
+                "Loading pokemons...",
+                "Loaded pokemons..."
+            )
 
         if (scrollState.isScrollInProgress && searchStr.isEmpty()) {
             DisposableEffect(Unit) {
                 onDispose {
                     if (scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == scrollState.layoutInfo.totalItemsCount - 1  && !isLoading) {
-                        onIsLoadingChange(true)
-                        pokemonViewModel.getPokemons ({
-                            Toast.makeText(context, "Loaded more pokemons...", Toast.LENGTH_SHORT).show()
-                        }, {
-                            onIsLoadingChange(false)
-                        })
+                        getPokemons(
+                            context,
+                            pokemonViewModel,
+                            onIsLoadingChange,
+                            "Loading more pokemons...",
+                            "Loaded more pokemons..."
+                        )
                     }
                 }
             }
         }
     }
+}
+
+fun getPokemons(
+    context: Context,
+    viewModel: PokemonViewModel,
+    onIsLoadingChange: (Boolean) -> Unit,
+    loadingMessage: String,
+    loadedMessage: String,
+) {
+    onIsLoadingChange(true)
+
+    Toast.makeText(context, loadingMessage, Toast.LENGTH_SHORT).show()
+
+    viewModel.getPokemons ({
+        Toast.makeText(context, loadedMessage, Toast.LENGTH_SHORT).show()
+    }, {
+        onIsLoadingChange(false)
+    })
 }
 
 @Composable
@@ -123,11 +147,10 @@ private fun Pokemons(scrollState: LazyListState, pokemons: List<PokemonInfo>) {
     }
 }
 
-@Composable
 fun Modifier.simpleVerticalScrollbar(
     state: LazyListState,
     width: Dp = 4.dp
-): Modifier {
+): Modifier = composed {
     val targetAlpha = if (state.isScrollInProgress) 0.5f else 0f
     val duration = if (state.isScrollInProgress) 150 else 500
 
@@ -136,7 +159,7 @@ fun Modifier.simpleVerticalScrollbar(
         animationSpec = tween(durationMillis = duration)
     )
 
-    return drawWithContent {
+    drawWithContent {
         drawContent()
 
         val firstVisibleElementIndex = state.layoutInfo.visibleItemsInfo.firstOrNull()?.index
