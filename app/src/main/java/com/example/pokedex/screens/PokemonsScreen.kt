@@ -1,29 +1,38 @@
 package com.example.pokedex.screens
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.Icon
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
-import com.example.pokedex.data.PokemonInfo
 import com.example.pokedex.mvvm.PokemonViewModel
+import com.example.pokedex.ui.components.PokemonsList
+import com.example.pokedex.ui.components.SearchBar
+import java.util.*
 
 @Composable
 fun PokemonsScreen(navController: NavHostController) {
-    val pokemonViewModel: PokemonViewModel = PokemonViewModel()
+    val context = LocalContext.current
+    val pokemonViewModel = PokemonViewModel()
+    val scrollState = rememberLazyListState()
+
     Scaffold(topBar = {
         TopAppBar {
             Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back",
@@ -34,59 +43,63 @@ fun PokemonsScreen(navController: NavHostController) {
             Text(text = "Pokedex List")
         }
     }) {
-        Pokemons(pokemons = pokemonViewModel.listaPokemonsInfo)
-        pokemonViewModel.getPokemons()
+        val (searchStr, onSearchStrChange) = remember { mutableStateOf("") }
 
-    }
-}
+        val (isLoading, onIsLoadingChange) = remember { mutableStateOf(false) }
 
-@Composable
-fun Pokemon(pokemon: PokemonInfo) {
+        Column {
+            SearchBar(value = searchStr, onValueChange = onSearchStrChange)
 
-    val expanded = remember { mutableStateOf(false) }
-    val extraPadding = if (expanded.value) 48.dp else 0.dp
-    val pokemonName = pokemon.name.replaceFirstChar { it.uppercase() }
+            PokemonsList(
+                scrollState = scrollState,
+                pokemons = pokemonViewModel.listaPokemonsInfo.filter { pokemonInfo ->
+                    pokemonInfo.name.contains(searchStr.lowercase(Locale.getDefault()))
+                })
+        }
 
-    Surface(
-        color = MaterialTheme.colors.primary,
-        modifier = Modifier.padding(vertical = 5.dp, horizontal = 10.dp)
-    ) {
-        Column() {
-            Row(modifier = Modifier.padding(25.dp)) {
-                Column(
-                    Modifier
-                        .weight(1f)
-                        .padding(bottom = extraPadding)
-                ) {
-                    Text(text = "Pokemon: ")
-                    Text(text = pokemonName)
-                }
-                OutlinedButton(onClick = { expanded.value = !expanded.value }) {
-                    Text(if (expanded.value) "hide" else "catch")
+        if (pokemonViewModel.listaPokemonsInfo.isEmpty() && !isLoading)
+            getPokemons(
+                context,
+                pokemonViewModel,
+                onIsLoadingChange,
+                "Loading pokemons...",
+                "Loaded pokemons..."
+            )
+
+        if (scrollState.isScrollInProgress && searchStr.isEmpty()) {
+            LocalFocusManager.current.clearFocus()
+
+            DisposableEffect(Unit) {
+                onDispose {
+                    if (scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == scrollState.layoutInfo.totalItemsCount - 1  && !isLoading) {
+                        getPokemons(
+                            context,
+                            pokemonViewModel,
+                            onIsLoadingChange,
+                            "Loading more pokemons...",
+                            "Loaded more pokemons..."
+                        )
+                    }
                 }
             }
-            if (expanded.value)
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "# ${pokemon.id}")
-                    Text(text = "Height: ${pokemon.height}")
-                    Text(text = "Weight: ${pokemon.weight}")
-                    AsyncImage(
-                        model = pokemon.sprites.front_default,
-                        contentDescription = "Sprite of ${pokemon.name}",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
         }
     }
 }
 
-@Composable
-private fun Pokemons(pokemons: List<PokemonInfo>) {
-    val scrollState = rememberScrollState()
-    LazyColumn {
-        itemsIndexed(items = pokemons) { index, item ->
-            Pokemon(pokemon = item)
-        }
-    }
+private fun getPokemons(
+    context: Context,
+    viewModel: PokemonViewModel,
+    onIsLoadingChange: (Boolean) -> Unit,
+    loadingMessage: String,
+    loadedMessage: String,
+) {
+    onIsLoadingChange(true)
+
+    Toast.makeText(context, loadingMessage, Toast.LENGTH_SHORT).show()
+
+    viewModel.getPokemons ({
+        Toast.makeText(context, loadedMessage, Toast.LENGTH_SHORT).show()
+    }, {
+        onIsLoadingChange(false)
+    })
 }

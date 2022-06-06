@@ -6,10 +6,14 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface PokeMonApi {
     @GET("pokemon")
-    suspend fun getPokemonsList(): PokemonsData
+    suspend fun getPokemonsList(
+        @Query("offset") offset: Int? = 0,
+        @Query("limit") limit: Int? = 20,
+    ): PokemonsData
 
     @GET("pokemon/{name}")
     suspend fun getPokemonInfo(@Path("name") name:String): PokemonInfo
@@ -26,5 +30,4 @@ interface PokeMonApi {
             return apiService!!
         }
     }
-
 }
